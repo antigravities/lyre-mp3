@@ -1,0 +1,95 @@
+<html>
+        <head>
+                <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+                <script type="text/javascript">
+
+                        var videoID = "";
+                        var interval;
+
+                        function loading(){
+                                if( $("#loading").html() == "" ){
+                                        $("#loading").html("<img src='//i.imgur.com/2FhGJ03.gif' alt='*gasp*'></img>");
+                                        document.getElementById("url").readOnly = true;
+                                        document.getElementById("btn").disabled = true;
+                                }
+                                else{
+                                        $("#loading").html("");
+                                        document.getElementById("url").readOnly = false;
+                                        document.getElementById("btn").disabled = false;
+                                }
+                        }
+
+                        function setStatus(str, isError){
+                                if( isError ){
+                                        str="<font color='red'>" + str + "</font>";
+                                }
+                                $("#error").html(str);
+                        }
+
+                        function check(){
+                                $.ajax("/api/getStatus/" + videoID).done(function(msg){
+                                        var p=JSON.parse(msg);
+                                        if( p.status == "done" ){
+                                                loading();
+                                                clearInterval(interval);
+                                                setStatus(p.message);
+                                        }
+                                        else if( p.status == "inqueue" ){
+                                                setStatus("You're " + p.message + " in the queue!");
+                                        }
+                                        else if( p.status == "converting" ){
+                                                setStatus("Your video is converting!");
+                                        }
+                                        else {
+                                    						loading();
+                                    						clearInterval(interval);
+                                                setStatus("An error occurred, and you've been removed from the queue. Try again later.", true);
+                                        }
+                                });
+                        }
+
+                        function setUpChecking(){
+                                check();
+                                interval=setInterval(check, 5000);
+                        }
+
+                        function submit(){
+                                var video=$("#url").val();
+                                loading();
+                                $.ajax("/api/add/" + encodeURIComponent(video)).done(function(msg){
+                                        var p=JSON.parse(msg);
+                                        if( p.status == "error" ){
+                                                loading();
+                                                setStatus("That isn't a valid URL.", true);
+                                                return;
+                                        }
+                                        else if( p.status == "exists" ){
+                                                loading();
+                                                setStatus(p.message);
+                                        }
+                                        else if( p.status == "inqueue" || p.status == "queued" ){
+                                                setStatus("You're in the queue!");
+                                                videoID=p.id;
+                                                setUpChecking();
+                                        }
+                                });
+                                return false;
+                        }
+
+                        window.onload=function(){document.getElementById("theform").onsubmit=submit;}
+                </script>
+                <title>
+                        lyre
+                </title>
+        </head>
+        <body style="font-family: 'Helvetica'; text-align: center;">
+                <h1>lyre</h1>
+                <div id="loading"></div>
+                <form id="theform">
+                        URL: <input type="text" id="url"></input>
+                        <input type="submit" value="Convert to MP3!" id="btn"></input>
+                </form>
+                <div id="error"></div>
+		            <p style="text-align: center;">lyre &copy; 2014, 2016 <a href="//antigraviti.es/">antigravities</a>.</p>
+        </body>
+</html>

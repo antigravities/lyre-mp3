@@ -1,0 +1,13 @@
+{
+	"name": "lyre-mp3",
+	"version": "1.0.0",
+	"author": "Alexandra 'antigravities' Frock",
+	"homepage": "https://github.com/antigravities/lyre-mp3",
+	"bugs": "https://github.com/antigravities/lyre-mp3/issues",
+	"license": "GPL-3.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/antigravities/lyre-mp3.git"
+	},
+	"description": "A web frontend to youtube-dl -x"
+}
